@@ -11,31 +11,13 @@ import {
   IonImg,
 } from '@ionic/react';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import '../theme/auth.css';
-
-const COMUNAS = [
-  'Viña del Mar',
-  'Valparaíso',
-  'Quilpué',
-  'Villa Alemana',
-  'Quillota',
-  'La Calera',
-  'Concón',
-  'Ventanas',
-  'Casablanca',
-  'Placilla',
-  'San Antonio',
-  'Reñaca',
-  'Papudo',
-  'Zapallar',
-  'La Ligua',
-  'Limache',
-];
+import { Link, useNavigate } from 'react-router-dom';
+import { COMUNAS } from '../data/mock';
+import { saveRegisteredUser } from '../data/users';
 
 const Register: React.FC = () => {
+    const navigate = useNavigate();
     const [nombre, setNombreCompleto] = useState('');
-    const [fechaNac, setFechaNac] = useState('');
     const [comuna, setComuna] = useState('');
     const [correo, setCorreo] = useState('');
     const [correo2, setCorreo2] = useState('');
@@ -69,9 +51,14 @@ const Register: React.FC = () => {
       alert('Las contraseñas no coinciden');
       return;
     }
-    // Simulacion cuenta creada
-    console.log({ nombre, fechaNac, comuna, correo });
-    alert('Cuenta creada (simulado)');
+    saveRegisteredUser({
+      nombre: nombre.trim(),
+      correo: correo.trim(),
+      password,
+      comuna,
+    });
+    alert('Cuenta creada. Ahora inicia sesión.');
+    navigate('/login');
   };
 
   return (
@@ -96,15 +83,6 @@ const Register: React.FC = () => {
                     required
                     value={nombre}
                     onIonInput={(e) => setNombreCompleto(e.detail.value ?? '')}
-                />
-                </div>
-                <div className="field">
-                  <label className="field-label">Fecha de nacimiento</label>
-                <IonInput
-                    type="date"
-                    required
-                    value={fechaNac}
-                    onIonInput={(e) => setFechaNac(e.detail.value ?? '')}
                 />
                 </div>
                 <div className="field">

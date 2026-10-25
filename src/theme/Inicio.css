@@ -1,6 +1,6 @@
 .inicio-page ion-header,
 .inicio-page ion-toolbar {
-  --background: #334057;
+  --background: #1f2a40;
   --border-width: 0;
   --min-height: 0;
   --padding-top: 0;
@@ -12,12 +12,12 @@
 }
 
 .inicio-content {
-  --background: #334057;
+  --background: #1f2a40;
   --padding-bottom: 4px;
 }
 
 ion-tabs {
-  background: #334057;
+  background: #1f2a40;
 }
 
 .inicio-wrap {
@@ -47,9 +47,9 @@ ion-tabs {
 }
 
 .inicio-panel {
-  background: #3d5a80;
+  background: #3d5473;
   border-radius: 32px;
-  padding: 12px 12px 12px;
+  padding: 12px;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -165,7 +165,6 @@ ion-tabs {
   font-weight: 500;
   line-height: 1.3;
   max-width: 92px;
-  opacity: 1;
   -webkit-text-fill-color: #ffffff;
 }
 
@@ -179,7 +178,6 @@ ion-tabs {
   right: 8px;
   top: 28px;
   text-align: left;
-  transform: none;
 }
 
 .bars-chart {
@@ -288,6 +286,7 @@ ion-tabs {
     justify-content: space-between;
     gap: 16px;
     padding: 40px 8px 18px;
+    flex-shrink: 0;
   }
 
   .inicio-desktop-left {
@@ -377,11 +376,6 @@ ion-tabs {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-  }
-
-  .inicio-desktop-header {
-    flex-shrink: 0;
-    padding: 40px 8px 18px;
   }
 
   .inicio-panel {

@@ -1,5 +1,5 @@
 .auth-content {
-  --background: #1d2b44;
+  --background: #1f2a40;
 }
 
 .auth-wrap {
@@ -10,10 +10,11 @@
 
 .auth-logo {
   display: block;
-  width: 140px;
+  width: 160px;
   margin: 12px auto 20px;
-  border-radius: 16px;
-  overflow: hidden;
+  border-radius: 0;
+  overflow: visible;
+  background: transparent;
 }
 
 .auth-card {
@@ -48,9 +49,9 @@
 }
 .auth-card ion-input,
 .auth-card ion-select {
-  margin: 0;
   display: block;
   min-height: 48px;
+  margin: 0 0 8px;
   background: #f0f0f0;
   border-radius: 12px;
   overflow: hidden;
@@ -64,7 +65,6 @@
   --highlight-color-invalid: transparent;
   --border-width: 0;
   --box-shadow: none;
-  margin-bottom: 8px;
 }
 
 .field-label {
@@ -112,15 +112,6 @@
 }
 
 @media (min-width: 768px) {
-  .auth-split {
-    --background: #1d2b44;
-  }
-
-  .auth-split ion-toolbar {
-    --background: transparent;
-    --border-width: 0;
-  }
-
   .auth-split .auth-wrap {
     max-width: 960px;
     min-height: 100%;
