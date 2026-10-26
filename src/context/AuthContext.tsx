@@ -1,39 +1,56 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
+import { TOKEN_KEY, USER_KEY } from '../services/api';
 
 export type Role = 'inspector' | 'admin';
 
 export interface AuthUser {
+  id: number;
   nombre: string;
   correo: string;
   rol: Role;
   comuna: string;
+  permisos: 'ADMIN' | 'INSPECTOR';
 }
 
 interface AuthContextValue {
   user: AuthUser | null;
-  login: (user: AuthUser) => void;
+  login: (user: AuthUser, token: string) => void;
   updateUser: (patch: Partial<AuthUser>) => void;
   logout: () => void;
 }
 
-const STORAGE_KEY = 'sifcom-user';
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+export const mapApiUser = (raw: Record<string, unknown>): AuthUser => {
+  const permisos = String(raw.PermisosUser ?? raw.permisosuser ?? 'INSPECTOR').toUpperCase();
+  const isAdmin = permisos === 'ADMIN';
+  return {
+    id: Number(raw.IdUser ?? raw.iduser ?? 0),
+    nombre: String(raw.Nombre ?? raw.nombre ?? 'Usuario'),
+    correo: String(raw.Email ?? raw.email ?? ''),
+    rol: isAdmin ? 'admin' : 'inspector',
+    comuna: String(raw.Comuna ?? raw.comuna ?? 'Valparaíso'),
+    permisos: isAdmin ? 'ADMIN' : 'INSPECTOR',
+  };
+};
 
 const readUser = (): AuthUser | null => {
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(USER_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as AuthUser;
     return {
+      id: parsed.id || 0,
       nombre: parsed.nombre || 'Usuario',
       correo: parsed.correo,
       rol: parsed.rol,
       comuna: parsed.comuna || 'Valparaíso',
+      permisos: parsed.permisos || (parsed.rol === 'admin' ? 'ADMIN' : 'INSPECTOR'),
     };
   } catch {
     return null;
   }
 };
+
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(readUser);
@@ -41,20 +58,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
-      login: (next) => {
-        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      login: (next, token) => {
+        localStorage.setItem(TOKEN_KEY, token);
+        localStorage.setItem(USER_KEY, JSON.stringify(next));
         setUser(next);
       },
       updateUser: (patch) => {
         setUser((current) => {
           if (!current) return current;
           const next = { ...current, ...patch };
-          sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+          localStorage.setItem(USER_KEY, JSON.stringify(next));
           return next;
         });
       },
       logout: () => {
-        sessionStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(USER_KEY);
         setUser(null);
       },
     }),

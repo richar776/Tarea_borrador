@@ -295,6 +295,23 @@ ion-tabs {
   font-size: 0.78rem;
 }
 
+.sifcom-item-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.sifcom-item-actions button {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: #3e5c56;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .sifcom-status {
   display: flex;
   align-items: center;

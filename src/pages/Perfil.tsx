@@ -4,17 +4,15 @@ import { useNavigate } from 'react-router-dom';
 import AppShell from '../components/AppShell';
 import { useAuth } from '../context/AuthContext';
 import { COMUNAS } from '../data/mock';
-import { findRegisteredUser, saveRegisteredUser } from '../data/users';
 
 const Perfil: React.FC = () => {
   const { user, updateUser, logout } = useAuth();
   const navigate = useNavigate();
   const permiso = user?.rol === 'admin' ? 'Administrador Municipal' : 'Inspector';
-  const saved = user ? findRegisteredUser(user.correo) : undefined;
 
   const [nombre, setNombre] = useState(user?.nombre || 'Usuario');
   const [correo, setCorreo] = useState(user?.correo || '');
-  const [password, setPassword] = useState(saved?.password || '');
+  const [password, setPassword] = useState('');
   const [comuna, setComuna] = useState(user?.comuna || 'Valparaíso');
 
   const guardar = () => {
@@ -23,12 +21,6 @@ const Perfil: React.FC = () => {
       return;
     }
     updateUser({ nombre: nombre.trim(), correo: correo.trim(), comuna });
-    saveRegisteredUser({
-      nombre: nombre.trim(),
-      correo: correo.trim(),
-      password: password || saved?.password || '',
-      comuna,
-    });
     alert('Cambios guardados');
   };
 

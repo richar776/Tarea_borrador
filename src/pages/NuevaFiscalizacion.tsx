@@ -5,27 +5,61 @@ import {
   IonSelectOption,
   IonTextarea,
 } from '@ionic/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AppShell from '../components/AppShell';
-import { CHECKLIST_ITEMS, CONTRATOS } from '../data/mock';
+import { CHECKLIST_ITEMS } from '../data/mock';
+import { createFiscalizacion, listContratos, type Contrato } from '../services/api';
 
 const NuevaFiscalizacion: React.FC = () => {
-  const [contrato, setContrato] = useState('');
+  const navigate = useNavigate();
+  const [contratos, setContratos] = useState<Contrato[]>([]);
+  const [contrato, setContrato] = useState<number | ''>('');
   const [asunto, setAsunto] = useState('');
   const [checks, setChecks] = useState([true, true, false]);
   const [foto, setFoto] = useState('');
   const [obs, setObs] = useState('');
+  const [enviando, setEnviando] = useState(false);
+
+  useEffect(() => {
+    listContratos()
+      .then(setContratos)
+      .catch((err) => alert(err instanceof Error ? err.message : 'No se pudieron cargar contratos'));
+  }, []);
 
   const toggleCheck = (index: number) => {
     setChecks((prev) => prev.map((v, i) => (i === index ? !v : v)));
   };
 
-  const enviar = () => {
+  const estadoDesdeChecklist = () => {
+    const ok = checks.filter(Boolean).length;
+    if (ok === 3) return 'CUMPLE';
+    if (ok === 2) return 'ALERTA';
+    return 'MULTA';
+  };
+
+  const enviar = async () => {
     if (!contrato || !asunto.trim()) {
       alert('Completa contrato y asunto');
       return;
     }
-    alert('Fiscalización enviada (simulado)');
+    try {
+      setEnviando(true);
+      await createFiscalizacion({
+        Obra: asunto.trim(),
+        Ubicacion: 'Ubicación GPS Detectada (-33.045, -71.619)',
+        Foto: foto || undefined,
+        Observaciones: obs || undefined,
+        Estado: estadoDesdeChecklist(),
+        IdContrato: Number(contrato),
+      });
+      alert('Fiscalización enviada');
+      navigate('/tabs/historial-reportes', { replace: true });
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'No se pudo enviar la fiscalización');
+    } finally {
+      setEnviando(false);
+    }
   };
 
   return (
@@ -40,9 +74,9 @@ const NuevaFiscalizacion: React.FC = () => {
           value={contrato}
           onIonChange={(e) => setContrato(e.detail.value)}
         >
-          {CONTRATOS.map((c) => (
-            <IonSelectOption key={c.nombre} value={c.nombre}>
-              {c.nombre}
+          {contratos.map((c) => (
+            <IonSelectOption key={c.IdContrato} value={c.IdContrato}>
+              {c.Giro || c.Empresa}
             </IonSelectOption>
           ))}
         </IonSelect>
@@ -89,8 +123,8 @@ const NuevaFiscalizacion: React.FC = () => {
           onIonInput={(e) => setObs(e.detail.value ?? '')}
         />
 
-        <IonButton expand="block" className="sifcom-submit" onClick={enviar}>
-          Enviar Fiscalización
+        <IonButton expand="block" className="sifcom-submit" disabled={enviando} onClick={() => void enviar()}>
+          {enviando ? 'Enviando...' : 'Enviar Fiscalización'}
         </IonButton>
       </div>
     </AppShell>

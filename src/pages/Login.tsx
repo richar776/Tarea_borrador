@@ -6,34 +6,37 @@ import {
   IonInput,
   IonButton,
   IonImg,
-  IonSelect,
-  IonSelectOption,
 } from '@ionic/react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth, type Role } from '../context/AuthContext';
-import { findRegisteredUser } from '../data/users';
+import { mapApiUser, useAuth } from '../context/AuthContext';
+import api from '../services/api';
 
 const Login: React.FC = () => {
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
-  const [rol, setRol] = useState<Role>('inspector');
+  const [cargando, setCargando] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!correo.trim() || !password) {
       alert('Completa todos los campos');
       return;
     }
-    const saved = findRegisteredUser(correo.trim());
-    login({
-      nombre: saved?.nombre || 'Usuario',
-      correo: correo.trim(),
-      rol,
-      comuna: saved?.comuna || 'Valparaíso',
-    });
-    navigate('/tabs/home', { replace: true });
+    try {
+      setCargando(true);
+      const { data } = await api.post('/auth/login', {
+        Email: correo.trim(),
+        Contrasena: password,
+      });
+      login(mapApiUser(data.user), data.token);
+      navigate('/tabs/home', { replace: true });
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'No se pudo iniciar sesión');
+    } finally {
+      setCargando(false);
+    }
   };
 
   return (
@@ -71,21 +74,9 @@ const Login: React.FC = () => {
               />
             </div>
 
-            <div className="field">
-              <label className="field-label">Tipo de usuario</label>
-              <IonSelect
-                interface="popover"
-                value={rol}
-                onIonChange={(e) => setRol(e.detail.value)}
-              >
-                <IonSelectOption value="inspector">Inspector</IonSelectOption>
-                <IonSelectOption value="admin">Administrador</IonSelectOption>
-              </IonSelect>
-            </div>
-
             <div className="auth-actions">
-              <IonButton expand="block" shape="round" onClick={handleLogin}>
-                Iniciar Sesión
+              <IonButton expand="block" shape="round" disabled={cargando} onClick={handleLogin}>
+                {cargando ? 'Ingresando...' : 'Iniciar Sesión'}
               </IonButton>
               <p className="login-link">
                 ¿No tienes cuenta? <Link to="/register">Crea tu cuenta aquí</Link>

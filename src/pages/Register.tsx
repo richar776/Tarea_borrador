@@ -13,7 +13,7 @@ import {
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { COMUNAS } from '../data/mock';
-import { saveRegisteredUser } from '../data/users';
+import api from '../services/api';
 
 const Register: React.FC = () => {
     const navigate = useNavigate();
@@ -23,7 +23,9 @@ const Register: React.FC = () => {
     const [correo2, setCorreo2] = useState('');
     const [password, setPassword] = useState('');
     const [password2, setPassword2] = useState('');
-      const handleRegister = () => {
+    const [permisos, setPermisos] = useState<'INSPECTOR' | 'ADMIN'>('INSPECTOR');
+    const [cargando, setCargando] = useState(false);
+      const handleRegister = async () => {
     //Valida campos vacios
     if (
       !nombre.trim() ||
@@ -51,14 +53,22 @@ const Register: React.FC = () => {
       alert('Las contraseñas no coinciden');
       return;
     }
-    saveRegisteredUser({
-      nombre: nombre.trim(),
-      correo: correo.trim(),
-      password,
-      comuna,
-    });
-    alert('Cuenta creada. Ahora inicia sesión.');
-    navigate('/login');
+    try {
+      setCargando(true);
+      await api.post('/auth/register', {
+        Email: correo.trim(),
+        Nombre: nombre.trim(),
+        Comuna: comuna,
+        Contrasena: password,
+        PermisosUser: permisos,
+      });
+      alert('Cuenta creada. Ahora inicia sesión.');
+      navigate('/login');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'No se pudo crear la cuenta');
+    } finally {
+      setCargando(false);
+    }
   };
 
   return (
@@ -101,6 +111,19 @@ const Register: React.FC = () => {
                         {c}
                         </IonSelectOption>
                     ))}
+                </IonSelect>
+                </div>
+                <div className="field">
+                  <label className="field-label">
+                    Tipo de usuario <span className="required">*</span>
+                  </label>
+                <IonSelect
+                    interface="popover"
+                    value={permisos}
+                    onIonChange={(e) => setPermisos(e.detail.value)}
+                    >
+                    <IonSelectOption value="INSPECTOR">Inspector</IonSelectOption>
+                    <IonSelectOption value="ADMIN">Administrador</IonSelectOption>
                 </IonSelect>
                 </div>
                 <div className="field">
@@ -158,8 +181,8 @@ const Register: React.FC = () => {
                 <div className="auth-actions">
                   <p className="terms">Al registrarse acepta términos y condiciones</p>
 
-                  <IonButton expand="block" onClick={handleRegister}>
-                      CREAR CUENTA
+                  <IonButton expand="block" disabled={cargando} onClick={handleRegister}>
+                      {cargando ? 'CREANDO...' : 'CREAR CUENTA'}
                   </IonButton>
 
                   <p className="login-link">
